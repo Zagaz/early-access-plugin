@@ -51,11 +51,40 @@ WP_CLI::add_command( 'product', 'Product_CLI' );
            * Untag all early access classes when public access date is past.
            */
           public function untag_early_access() {
-              // To:do The function will be implemented here.
+              
+                 $args = array(
+                      'post_type' => 'product',
+                      'tax_query' => array(
+                           array(
+                           'taxonomy' => 'product_cat',
+                           'field' => 'slug',
+                           'terms' => 'early-access'
+                           )
+                      ),
+                      'meta_query' => array(
+                           array(
+                           'key' => 'public_access_date',
+                           'value' => date('Y-m-d'),
+                           'compare' => '<'
+                           )
+                      )
+                 );
+     
+                 $products = new WP_Query( $args );
+     
+                 if ( $products->have_posts() ) {
+                      while ( $products->have_posts() ) {
+                           $products->the_post();
+                           $product_id = get_the_ID();
+                           wp_remove_object_terms( $product_id, 'early-access', 'product_cat' );
+                      }
+                 }
+     
+                 wp_reset_postdata();
           }
       }
 
           WP_CLI::add_command( 'product', 'Product_CLI' );
 
-          
+
       
